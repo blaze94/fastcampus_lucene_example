@@ -4,7 +4,7 @@
   <artifactId>example</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>lucene example</name>
-  <description>fastcampus elastic search</description>
+  <description>fastcampus elastic search </description>
   <properties>
   	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   	<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
