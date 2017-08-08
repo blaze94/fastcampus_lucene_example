@@ -2,8 +2,11 @@ package fastcampus.lucene.example.analyzer;
 
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
+import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -22,8 +25,13 @@ public class JasoTokenFilter extends TokenFilter {
 
     public JasoTokenFilter(TokenStream tokenStream, int mode, boolean typo) {
         super(tokenStream);
+        /*
+        AttributeSource 에 addAttribute가 정의됨
+         */
         this.charTermAttr = addAttribute(CharTermAttribute.class);
         this.posIncAttr = addAttribute(PositionIncrementAttribute.class);
+        this.offsetAttribute = addAttribute(OffsetAttribute.class);
+
         this.terms = new LinkedList<char[]>();
         decomposeMode = mode;
         typoMode = typo;
@@ -41,6 +49,8 @@ public class JasoTokenFilter extends TokenFilter {
      */
     private CharTermAttribute charTermAttr;
     private PositionIncrementAttribute posIncAttr;
+    private OffsetAttribute offsetAttribute;
+    private TypeAttribute typeAtt;
     private Queue<char[]> terms;
 
 
@@ -51,13 +61,22 @@ public class JasoTokenFilter extends TokenFilter {
      * all others without modifying them. This function should return true if
      * a new token was generated and false if the last token was passed.
      */
+
+
     @Override
     public boolean incrementToken() throws IOException {
+        int length = 0;
+        int start = -1;
+        int end = -1;
+
+
         if (!terms.isEmpty()) {
             char[] buffer = terms.poll();
             charTermAttr.setEmpty();
             charTermAttr.copyBuffer(buffer, 0, buffer.length);
             posIncAttr.setPositionIncrement(0);
+            offsetAttribute.setOffset(0,buffer.length);
+
             return true;
         }
 
@@ -67,10 +86,10 @@ public class JasoTokenFilter extends TokenFilter {
             JasoDecomposer jasoDecomposer = new JasoDecomposer();
             String currentTokenInStream = this.input.getAttribute(CharTermAttribute.class).toString().trim();
             String decomposerTokenInStream =  jasoDecomposer.decomposer(currentTokenInStream);
-            if(decomposerTokenInStream.indexOf("★")>-1){
+            if(decomposerTokenInStream.contains("★")){
                 String[] spl = decomposerTokenInStream.split("★");
                 for(String splData : spl){
-                    if("".equals(splData.trim())==true) continue;
+                    if("".equals(splData.trim())) continue;
                     terms.add(splData.toCharArray());
                 }
             }
