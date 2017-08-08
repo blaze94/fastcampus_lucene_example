@@ -17,10 +17,8 @@ import fastcampus.lucene.example.database.MysqlConnect;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
-import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.*;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
@@ -34,31 +32,10 @@ public class IndexingExample {
      * 루씬 색인 예제 파일
      */
     public static void main(String[] args) {
-        String usage = "java org.apache.lucene.demo.IndexFiles"
-                + " [-index INDEX_PATH] [-docs DOCS_PATH] [-update]\n\n"
-                + "인덱스 경로  문서 경로 업데이트 유무 "
-                + "SearchFiles 로 검색";
 
         String indexPath = "./index";         //기본 index 패스
-        String docsPath = null;
-        boolean create = true;                //생성모드인지 추가 모드인지
-
-        for (int i = 0; i < args.length; i++) {
-            if ("-index".equals(args[i])) {
-                indexPath = args[i + 1];
-                i++;
-            } else if ("-docs".equals(args[i])) {
-                docsPath = args[i + 1];
-                i++;
-            } else if ("-update".equals(args[i])) {
-                create = false;
-            }
-        }
-
-        if (docsPath == null) {
-            System.err.println("Usage: " + usage);
-            System.exit(1);
-        }
+        String docsPath = "./data/books.csv";
+        boolean create = false;                //생성모드인지 추가 모드인지
 
         final Path docDir = Paths.get(docsPath);
         if (!Files.isReadable(docDir)) {
@@ -69,7 +46,6 @@ public class IndexingExample {
         Date start = new Date();
         try {
             System.out.println("인덱스 디렉토리 문서를 색인 합니다. '" + indexPath + "'...");
-
             Directory dir = FSDirectory.open(Paths.get(indexPath));
             Analyzer analyzer = new StandardAnalyzer();                 //기본 스탠다드분석기를 사용함
             IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);  //인덱스Writer의 설정을 지정하는 클래스
@@ -79,10 +55,14 @@ public class IndexingExample {
                 indexWriterConfig.setOpenMode(OpenMode.CREATE);
             } else {
                 // 기존 인덱스에 새도큐먼트를 추가함
-                indexWriterConfig.setOpenMode(OpenMode.CREATE_OR_APPEND);
+                indexWriterConfig.setOpenMode(OpenMode.APPEND);
             }
+            indexWriterConfig.setUseCompoundFile(false); //다중 파일 색인 생성시  !!!!!!!
 
-            //indexWriterConfig.setUseCompoundFile(false); //다중 파일 색인 생성시  !!!!!!!
+
+//            MergePolicy mergePolicy = new TieredMergePolicy();
+//            mergePolicy.setMaxCFSSegmentSizeMB(300);
+//            indexWriterConfig.setMergePolicy(mergePolicy);
 
             // 생인성능을 위해 램버퍼를 지정할수 있음
             // 많은 수의 문서를 색인 할 경우 램 버퍼값을 추가해 주면 좋음
@@ -99,8 +79,8 @@ public class IndexingExample {
             //색인 성능을 위해서 색인 종료후
             // 강제 병합을 할 수 있음
             // writer.forceMerge(1);
-
-            writer.close();
+            //writer.commit();
+            //writer.close();
 
             Date end = new Date();
             System.out.println(end.getTime() - start.getTime() + " total milliseconds");

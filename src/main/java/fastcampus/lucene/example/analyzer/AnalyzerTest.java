@@ -30,6 +30,8 @@ public class AnalyzerTest {
         Analyzer myKeywordAnalyzer = new TestAnalyzer();
         TokenStream stream = myKeywordAnalyzer.tokenStream("", new StringReader(testStr));
 
+
+
         int idx = 0;
         int end_offset = 0;
         int term_offset = 0;

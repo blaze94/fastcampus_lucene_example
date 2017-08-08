@@ -8,9 +8,9 @@ import java.util.Properties;
 public class MysqlConnect {
     // init database constants
     private static final String DATABASE_DRIVER = "com.mysql.jdbc.Driver";
-    private static final String DATABASE_URL = "jdbc:mysql://:23306/newsdb";
-    private static final String USERNAME = "";
-    private static final String PASSWORD = "";
+    private static final String DATABASE_URL = "jdbc:mysql://svn.queryjet.net:23306/newsdb";
+    private static final String USERNAME = "news_user";
+    private static final String PASSWORD = "news_user11";
     private static final String MAX_POOL = "250";
 
     // init connection object

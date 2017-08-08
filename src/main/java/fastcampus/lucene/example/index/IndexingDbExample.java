@@ -30,37 +30,9 @@ public class IndexingDbExample {
      * 루씬 색인 예제 파일
      */
     public static void main(String[] args) {
-        String usage = "java org.apache.lucene.demo.IndexFiles"
-                + " [-index INDEX_PATH] [-docs DOCS_PATH] [-update]\n\n"
-                + "인덱스 경로  문서 경로 업데이트 유무 "
-                + "SearchFiles 로 검색";
-
         String indexPath = "./index";         //기본 index 패스
         String docsPath = null;
         boolean create = true;                //생성모드인지 추가 모드인지
-
-        for (int i = 0; i < args.length; i++) {
-            if ("-index".equals(args[i])) {
-                indexPath = args[i + 1];
-                i++;
-            } else if ("-docs".equals(args[i])) {
-                docsPath = args[i + 1];
-                i++;
-            } else if ("-update".equals(args[i])) {
-                create = false;
-            }
-        }
-
-        if (docsPath == null) {
-            System.err.println("Usage: " + usage);
-            System.exit(1);
-        }
-
-        final Path docDir = Paths.get(docsPath);
-        if (!Files.isReadable(docDir)) {
-            System.out.println("Document directory '" + docDir.toAbsolutePath() + "' does not exist or is not readable, please check the path");
-            System.exit(1);
-        }
 
         Date start = new Date();
         try {
@@ -78,7 +50,7 @@ public class IndexingDbExample {
                 indexWriterConfig.setOpenMode(OpenMode.CREATE_OR_APPEND);
             }
 
-            //indexWriterConfig.setUseCompoundFile(false); //다중 파일 색인 생성시  !!!!!!!
+            indexWriterConfig.setUseCompoundFile(false); //다중 파일 색인 생성시  !!!!!!!
 
             // 생인성능을 위해 램버퍼를 지정할수 있음
             // 많은 수의 문서를 색인 할 경우 램 버퍼값을 추가해 주면 좋음
@@ -125,21 +97,23 @@ public class IndexingDbExample {
                     try {
                         Document doc = new Document();
                         doc.add(new StringField("id", resultSet.getString("id"), Field.Store.YES));
-                        doc.add(new StringField("title", resultSet.getString("title"), Field.Store.YES));
+                        doc.add(new TextField("title", resultSet.getString("title"), Field.Store.YES));
                         doc.add(new StringField("link", resultSet.getString("link"), Field.Store.YES));
-                        doc.add(new StringField("description", resultSet.getString("description"), Field.Store.YES));
-                        doc.add(new StringField("author", resultSet.getString("author"), Field.Store.YES));
-                        doc.add(new StringField("media", resultSet.getString("media"), Field.Store.YES));
-                        doc.add(new StringField("category", resultSet.getString("category"), Field.Store.YES));
+                        doc.add(new TextField("description", resultSet.getString("description"), Field.Store.YES));
+                        doc.add(new TextField("author", resultSet.getString("author"), Field.Store.YES));
+                        doc.add(new TextField("media", resultSet.getString("media"), Field.Store.YES));
+                        doc.add(new TextField("category", resultSet.getString("category"), Field.Store.YES));
 
                         if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
                             // 새로운 색인의 경우 새로 색인을 생성함
                             System.out.println("adding " + resultSet.getString("id"));
                             writer.addDocument(doc);
+                            //writer.commit();
                         } else {
                             //이미 색인이 존재하고 업데이트인 경우 색인을 추가함
                             System.out.println("updating " + resultSet.getString("id"));
                             writer.updateDocument(new Term("path", resultSet.getString("id")), doc);
+                            //writer.commit();
                         }
 
                     } catch(IllegalArgumentException ex) {
