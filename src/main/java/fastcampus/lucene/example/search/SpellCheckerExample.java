@@ -65,6 +65,7 @@ public class SpellCheckerExample {
 
         System.out.println("Did you mean:" + word );
 
+
       }
 
     } else {
